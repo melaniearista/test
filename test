@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Control Tower – Power BI Prototype</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --blue-900:#1e3a5f;--blue-700:#1d4ed8;--blue-600:#2563eb;--blue-500:#3b82f6;
+  --blue-400:#60a5fa;--blue-300:#93c5fd;--blue-200:#bfdbfe;--blue-100:#dbeafe;
+  --brand:#4a7ba7;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+  --purple-700:#7e22ce;--purple-600:#9333ea;--purple-500:#a855f7;
+  --purple-100:#f3e8ff;--purple-50:#faf5ff;
+  --gray-800:#1f2937;--gray-700:#374151;--gray-600:#4b5563;--gray-500:#6b7280;
+  --gray-400:#9ca3af;--gray-300:#d1d5db;--gray-200:#e5e7eb;--gray-100:#f3f4f6;
+  --gray-50:#f9fafb;--white:#ffffff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow:0 4px 12px rgba(0,0,0,.10);--shadow-lg:0 8px 24px rgba(0,0,0,.12);
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#edf2f7;color:var(--gray-700);min-height:100vh}
+.app{display:flex;min-height:100vh}
+.sidebar{width:56px;background:var(--blue-900);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:8px;flex-shrink:0}
+.si{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);cursor:pointer;transition:all .15s}
+.si:hover,.si.active{background:rgba(255,255,255,.12);color:#fff}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);border-bottom:1px solid var(--gray-200);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:var(--shadow-sm)}
+.tl{display:flex;align-items:center;gap:16px}
+.logo{display:flex;align-items:center;gap:10px}
+.bubbles{display:flex}
+.bub{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;box-shadow:var(--shadow-sm)}
+.bub-ai{background:var(--blue-600)}.bub-ml{background:var(--blue-500);margin-left:-14px}
+.logo-txt .t1{font-size:12px;font-weight:600;color:var(--blue-600)}.logo-txt .t2{font-size:10px;color:var(--gray-500)}
+.divv{width:1px;height:28px;background:var(--gray-300)}
+.page-title{font-size:26px;font-weight:600;color:var(--brand);letter-spacing:-.3px}
+.tr{display:flex;align-items:center;gap:10px}
+.btn-refresh{display:flex;align-items:center;gap:6px;padding:0 12px;height:34px;border:1px solid var(--gray-300);border-radius:var(--rs);background:var(--white);font-size:11px;color:var(--gray-600);cursor:pointer;box-shadow:var(--shadow-sm)}
+.signal-tabs{display:flex;gap:4px}
+.stab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;color:var(--gray-600)}
+.stab:hover{background:var(--gray-100)}
+.stab.active{background:var(--blue-600);color:#fff;box-shadow:var(--shadow-sm)}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.subnav{display:flex;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r);padding:4px;margin-bottom:16px;box-shadow:var(--shadow-sm);width:fit-content;max-width:100%}
+.subnav.wide{width:100%}
+.snav{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;color:var(--gray-600)}
+.snav:hover{background:var(--gray-100)}
+.snav.active{background:var(--blue-600);color:#fff}
+.snav.activep{background:var(--purple-600);color:#fff}
+.page{display:none}.page.active{display:block}
+.filter-bar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}
+.flabel{font-size:10px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.4px}
+.fsel{height:34px;border:1px solid var(--gray-300);border-radius:var(--rs);background:var(--white);font-size:12px;color:var(--gray-700);padding:0 28px 0 10px;box-shadow:var(--shadow-sm);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%239ca3af' stroke-width='1.5' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:14px}
+.fiw{position:relative}.fiw svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--gray-400);pointer-events:none}
+.finput{height:34px;border:1px solid var(--gray-300);border-radius:var(--rs);background:var(--white);font-size:12px;color:var(--gray-700);padding:0 10px 0 30px;box-shadow:var(--shadow-sm);width:100%}
+.finput::placeholder{color:var(--gray-400)}
+.card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+.card-title{font-size:14px;font-weight:600;color:var(--brand);margin-bottom:12px}
+.card-title.p{color:var(--purple-700)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card,.kpi-card{animation:fadeUp .3s ease both}
+.kpi-grid{display:grid;gap:12px;margin-bottom:16px}
+.g5{grid-template-columns:repeat(5,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.kpi-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;transition:box-shadow .2s}
+.kpi-card:hover{box-shadow:var(--shadow-lg)}
+.kv{font-size:28px;font-weight:700;margin-bottom:4px;line-height:1}
+.kv.d{color:var(--gray-800)}.kv.s{color:var(--green)}.kv.w{color:var(--yellow)}.kv.pp{color:var(--purple-700)}
+.klabel{font-size:11px;color:var(--gray-500);line-height:1.4}
+.goal-row{display:flex;align-items:center;gap:5px;margin-top:6px;font-size:11px;color:var(--green)}
+.trend-row{display:flex;align-items:center;gap:5px;margin-top:6px;font-size:11px;font-weight:600}
+.tup{color:var(--green)}.tdn{color:var(--red)}
+.circ-title{font-size:10px;font-weight:600;color:var(--gray-500);text-align:center;text-transform:uppercase;margin-bottom:6px}
+.circ-wrap{position:relative;display:flex;align-items:center;justify-content:center}
+.circ-inner{position:absolute;display:flex;flex-direction:column;align-items:center}
+.circ-pct{font-size:20px;font-weight:700;color:var(--green)}
+.circ-ticks{display:flex;justify-content:space-between;font-size:9px;color:var(--gray-400);margin-top:2px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ch260{height:260px;display:flex;flex-direction:column}
+.ch280{height:280px;display:flex;flex-direction:column}
+.ch240{height:240px;display:flex;flex-direction:column}
+.donut-row{display:flex;align-items:center;gap:12px;flex:1;min-height:0}
+.legend{display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1}
+.li{display:flex;align-items:center;gap:6px;font-size:11px}
+.ldot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.lname{flex:1;color:var(--gray-600)}.lval{color:var(--gray-800);font-weight:600}
+.center-metric{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:8px}
+.center-val{font-size:36px;font-weight:700;color:var(--gray-800)}
+.center-lbl{font-size:12px;color:var(--gray-500);text-align:center;line-height:1.4}
+.bar-area{flex:1;display:flex;align-items:flex-end;gap:24px;padding:0 8px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar-outer{width:100%;background:var(--gray-100);border-radius:6px 6px 0 0;height:160px;display:flex;align-items:flex-end}
+.bar-inner{width:100%;border-radius:6px 6px 0 0;display:flex;align-items:flex-end;justify-content:center}
+.bar-lbl{font-size:11px;font-weight:700;padding-bottom:6px;color:#fff}
+.bar-xlabel{font-size:11px;color:var(--gray-500);text-align:center}
+.bar-legend{display:flex;justify-content:center;gap:16px;margin-top:8px}
+.bli{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--gray-600)}
+.bdot{width:8px;height:8px;border-radius:2px}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{text-align:left;padding:6px 8px;font-weight:600;color:var(--gray-700);border-bottom:1px solid var(--gray-200);white-space:nowrap;background:var(--gray-50)}
+.tbl th.c{text-align:center}.tbl td{padding:5px 8px;border-bottom:1px solid var(--gray-100)}
+.tbl tr:hover td{background:var(--gray-50)}.tbl td.c{text-align:center}
+.pthead th{background:var(--purple-50)}
+.heat-cell{height:24px;border-radius:4px}
+.hg{background:#22c55e}.hy{background:#facc15}.hr{background:#ef4444}.hx{background:var(--gray-300)}
+.badge-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.badge{display:flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--gray-200);border-radius:8px;padding:6px 12px;box-shadow:var(--shadow-sm);font-size:12px;font-weight:600;color:var(--gray-700)}
+.dot-ind{width:14px;height:14px;border-radius:50%}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600}
+.tb{background:var(--blue-100);color:#1d4ed8}.tg{background:#dcfce7;color:#166534}
+.ty{background:#fef3c7;color:#92400e}.tr2{background:#fee2e2;color:#991b1b}
+.to{background:#ffedd5;color:#9a3412}.tgr{background:var(--gray-100);color:var(--gray-700)}
+.tag-pos{background:var(--blue-100);color:#1d4ed8;border-radius:3px;padding:1px 5px;font-size:10px;font-weight:600}
+.tag-rtdx{background:#d1fae5;color:#065f46;border-radius:3px;padding:1px 5px;font-size:10px;font-weight:600}
+.tag-active{background:#dcfce7;color:#166534;border-radius:3px;padding:1px 5px;font-size:10px;font-weight:600}
+.gran-tags{display:flex;gap:3px;flex-wrap:wrap}
+.btn-pri{padding:0 14px;height:34px;background:var(--blue-700);color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:500;cursor:pointer;box-shadow:var(--shadow-sm)}
+.btn-out{padding:0 12px;height:32px;background:var(--white);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--rs);font-size:11px;font-weight:500;cursor:pointer;box-shadow:var(--shadow-sm)}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.igrid{display:grid;grid-template-columns:220px 1fr;gap:14px}
+.rank-list{display:flex;flex-direction:column;gap:7px}
+.rank-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.rank-outer{flex:1;height:18px;background:var(--gray-100);border-radius:4px;overflow:hidden}
+.rank-inner{height:100%;background:var(--blue-500);border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:700;color:#fff}
+.rank-lbl{font-size:11px;color:var(--gray-700);white-space:nowrap;min-width:100px}
+.pbi-note{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;border-radius:var(--r);padding:10px 16px;font-size:11px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.pbi-note strong{font-weight:700}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:4px}
+/* ── OVERVIEW SCORECARD ── */
+.ov-hero{background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-700) 60%,var(--blue-500) 100%);border-radius:14px;padding:28px 32px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
+.ov-hero::before{content:'';position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
+.ov-hero::after{content:'';position:absolute;right:60px;bottom:-60px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04)}
+.ov-hero-left{z-index:1}.ov-hero-eyebrow{font-size:11px;font-weight:600;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.ov-hero-title{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:-.2px}
+.ov-hero-sub{font-size:12px;color:rgba(255,255,255,.65);max-width:380px;line-height:1.5}
+.ov-hero-stats{display:flex;gap:14px;z-index:1}
+.ov-stat{text-align:center;padding:12px 18px;background:rgba(255,255,255,.1);border-radius:10px;border:1px solid rgba(255,255,255,.15)}
+.ov-stat-val{font-size:20px;font-weight:700;color:#fff}.ov-stat-lbl{font-size:10px;color:rgba(255,255,255,.65);margin-top:2px;white-space:nowrap}
+.ov-sh{display:flex;align-items:center;gap:10px;margin:20px 0 14px}
+.ov-pill{display:flex;align-items:center;gap:6px;padding:5px 14px 5px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff}
+.ov-line{flex:1;height:1px;background:var(--gray-200)}
+.ov-note{font-size:10px;color:var(--gray-400);font-style:italic}
+.ov-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
+.ov-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:4px}
+.mc{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .2s,transform .15s}
+.mc:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.mc-top{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px}
+.mc-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mc-name{font-size:13px;font-weight:700;color:var(--gray-800);margin-bottom:3px;line-height:1.2}
+.mc-desc{font-size:11px;color:var(--gray-500);line-height:1.45}
+.mc-bot{padding:9px 16px 12px;background:var(--gray-50);border-top:1px solid var(--gray-100);display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.mc-meta{display:flex;flex-direction:column;gap:1px}
+.mc-ml{font-size:9px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.4px}
+.mc-mv{font-size:11px;font-weight:600;color:var(--gray-700)}
+.mc-mv.g{color:var(--green)}.mc-mv.y{color:var(--yellow)}.mc-mv.r{color:var(--red)}
+.tbadge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.tbg{background:#dcfce7;color:#166534}.tby{background:#fef3c7;color:#92400e}.tbb{background:var(--blue-100);color:#1d4ed8}
+.mc.nt{opacity:.7}
+.nt-tag{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:10px;background:#f3f4f6;border:1px solid var(--gray-200);font-size:9px;font-weight:600;color:var(--gray-500);margin-left:6px;vertical-align:middle}
+.dim-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-200);margin:2px 2px 0 0}
+/* ── LANDING PAGE PIPELINE CARDS ── */
+.lp-pipeline-card{background:var(--white);border:1px solid var(--gray-200);border-radius:14px;box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:0;transition:box-shadow .2s,transform .15s;animation:fadeUp .35s ease both}
+.lp-pipeline-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.lp-card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.lp-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lp-card-label{font-size:15px;font-weight:700;color:var(--gray-800);line-height:1.1}
+.lp-card-sublabel{font-size:10px;color:var(--gray-500);margin-top:1px}
+.lp-status-dot{width:10px;height:10px;border-radius:50%;margin-left:auto;flex-shrink:0;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+.lp-dq-score{font-size:42px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:4px}
+.lp-dq-label{font-size:11px;color:var(--gray-500);margin-bottom:14px;font-weight:500}
+.lp-dims{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;padding:12px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-100)}
+.lp-dim{display:flex;align-items:center;justify-content:space-between}
+.lp-dim-name{font-size:11px;color:var(--gray-600)}
+.lp-dim-val{font-size:12px;font-weight:700}
+.lp-ok{color:var(--green)}.lp-warn{color:var(--yellow)}.lp-bad{color:var(--red)}
+.lp-actions{display:flex;flex-direction:column;gap:8px;margin-top:auto}
+.lp-btn-primary{display:flex;align-items:center;justify-content:center;gap:6px;height:36px;background:var(--blue-600);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;width:100%}
+.lp-btn-primary:hover{opacity:.88}
+.lp-btn-ghost{display:flex;align-items:center;justify-content:center;gap:6px;height:34px;background:transparent;color:var(--gray-600);border:1px solid var(--gray-300);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;width:100%}
+.lp-btn-ghost:hover{background:var(--gray-50);border-color:var(--gray-400);color:var(--gray-800)}
+.lp-kpi-strip-item{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 20px;flex:1;min-width:80px}
+.lp-strip-val{font-size:18px;font-weight:700;color:var(--gray-800)}
+.lp-strip-lbl{font-size:10px;color:var(--gray-600);font-weight:500;white-space:nowrap}
+.lp-strip-target{font-size:9px;color:var(--gray-400);margin-top:1px}
+.lp-strip-sep{width:1px;height:36px;background:var(--gray-200);flex-shrink:0}
+/* Incident modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--white);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:28px 28px 24px;width:440px;max-width:90vw;animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--gray-500);margin-bottom:20px}
+.modal-field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.modal-label{font-size:11px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.3px}
+.modal-input,.modal-textarea,.modal-select{border:1px solid var(--gray-300);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--gray-800);font-family:'DM Sans',sans-serif;background:var(--white);width:100%;transition:border .15s}
+.modal-input:focus,.modal-textarea:focus,.modal-select:focus{outline:none;border-color:var(--blue-500);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.modal-textarea{resize:vertical;min-height:80px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-100)}
+.modal-cancel{padding:0 18px;height:36px;background:var(--white);color:var(--gray-600);border:1px solid var(--gray-300);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.modal-submit{padding:0 20px;height:36px;background:var(--blue-600);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.modal-submit:hover{background:var(--blue-700)}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+  <div class="si active"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+  <div class="si"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+  <div class="si"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+  <div class="si"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+</div>
+<div class="main">
+<div class="topbar">
+  <div class="tl">
+    <div class="logo"><div class="bubbles"><div class="bub bub-ai">AI</div><div class="bub bub-ml">ML</div></div><div class="logo-txt"><div class="t1">Data Pipelines</div><div class="t2">&amp; Capabilities</div></div></div>
+    <div class="divv"></div><div class="page-title">Control Tower</div>
+  </div>
+  <div class="tr">
+    <button class="btn-refresh"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Last Refresh: 15/04/2026</button>
+    <div class="divv"></div>
+    <div class="signal-tabs">
+      <div class="stab" id="stab-overview" onclick="switchSignal('overview')">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-1px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Overview
+      </div>
+      <div class="stab active" id="stab-pos" onclick="switchSignal('pos')">POS</div>
+      <div class="stab" id="stab-rtdx" onclick="switchSignal('rtdx')">RTDX</div>
+      <div class="stab" id="stab-media" onclick="switchSignal('media')">Media</div>
+    </div>
+  </div>
+</div>
+<div class="content">
+  <div class="pbi-note"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><strong>Power BI Prototype</strong> — Overview scorecard loads by default. Select POS, RTDX, or Media above to explore live pipeline data across all 5 pages.</span></div>
+
+  <div class="subnav wide" id="subnav-pos" style="display:none;align-items:center;gap:4px">
+    <div class="snav active" onclick="switchPage(this,'kpis','pos')">Past Month KPIs</div>
+    <div class="snav" onclick="switchPage(this,'radar','pos')">Status Radar</div>
+    <div class="snav" onclick="switchPage(this,'insight','pos')">Insight Center</div>
+    <div style="flex:1"></div>
+    <button onclick="openIncident('POS')" style="display:flex;align-items:center;gap:6px;padding:0 14px;height:32px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;margin-left:8px;white-space:nowrap">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Reportar Incidente
+    </button>
+  </div>
+  <div class="subnav wide" id="subnav-media" style="display:none;align-items:center;gap:4px">
+    <div class="snav activep" onclick="switchPage(this,'vendor','media')">Vendor Scorecard</div>
+    <div class="snav" onclick="switchPage(this,'e2e','media')">E2E Observability</div>
+    <div style="flex:1"></div>
+    <button onclick="openIncident('Media')" style="display:flex;align-items:center;gap:6px;padding:0 14px;height:32px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;margin-left:8px;white-space:nowrap">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Reportar Incidente
+    </button>
+  </div>
+
+  <!-- PAGE: OVERVIEW SCORECARD -->
+  <div id="page-overview" class="page active">
+
+    <!-- Hero -->
+    <div class="ov-hero">
+      <div class="ov-hero-left">
+        <div class="ov-hero-eyebrow">Data Pipelines &amp; Capabilities · April 2026</div>
+        <div class="ov-hero-title">Control Tower Overview</div>
+        <div class="ov-hero-sub">Overall data quality snapshot across all pipelines. Select a signal to explore detailed dashboards or use the quick actions to report an incident.</div>
+      </div>
+      <div class="ov-hero-stats">
+        <div class="ov-stat"><div class="ov-stat-val" style="color:#4ade80">91.8%</div><div class="ov-stat-lbl">Avg Overall DQ</div></div>
+        <div class="ov-stat"><div class="ov-stat-val">1,087</div><div class="ov-stat-lbl">Closed Incidents</div></div>
+        <div class="ov-stat"><div class="ov-stat-val" style="color:#4ade80">0</div><div class="ov-stat-lbl">Out of SLA</div></div>
+      </div>
+    </div>
+
+
+    <!-- ── 4 PIPELINE DQ CARDS ── -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+
+      <!-- POS -->
+      <div class="lp-pipeline-card" style="--accent:#2563eb;--accent-light:#dbeafe">
+        <div class="lp-card-header">
+          <div class="lp-card-icon" style="background:#dbeafe">
+            <svg width="20" height="20" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          </div>
+          <div>
+            <div class="lp-card-label">POS</div>
+            <div class="lp-card-sublabel">Point of Sale</div>
+          </div>
+          <div class="lp-status-dot" style="background:#10b981" title="On track"></div>
+        </div>
+        <div class="lp-dq-score" style="color:#2563eb">92.42%</div>
+        <div class="lp-dq-label">Overall Data Quality</div>
+        <div class="lp-dims">
+          <div class="lp-dim"><span class="lp-dim-name">Completeness</span><span class="lp-dim-val lp-warn">93.1%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Consistency</span><span class="lp-dim-val lp-warn">91.3%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Timeliness</span><span class="lp-dim-val lp-warn">88.8%</span></div>
+        </div>
+        <div class="lp-actions">
+          <button class="lp-btn-primary" onclick="switchSignal('pos')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Ver Dashboard
+          </button>
+          <button class="lp-btn-ghost" onclick="openIncident('POS')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Reportar Incidente
+          </button>
+        </div>
+      </div>
+
+      <!-- RTDX -->
+      <div class="lp-pipeline-card" style="--accent:#0d9488;--accent-light:#ccfbf1">
+        <div class="lp-card-header">
+          <div class="lp-card-icon" style="background:#ccfbf1">
+            <svg width="20" height="20" fill="none" stroke="#0d9488" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div>
+            <div class="lp-card-label">RTDX</div>
+            <div class="lp-card-sublabel">Real-Time Data Exchange</div>
+          </div>
+          <div class="lp-status-dot" style="background:#10b981" title="On track"></div>
+        </div>
+        <div class="lp-dq-score" style="color:#0d9488">91.80%</div>
+        <div class="lp-dq-label">Overall Data Quality</div>
+        <div class="lp-dims">
+          <div class="lp-dim"><span class="lp-dim-name">Distributor Perf.</span><span class="lp-dim-val lp-ok">95.2%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Validity</span><span class="lp-dim-val lp-warn">89.6%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Completeness</span><span class="lp-dim-val lp-warn">91.8%</span></div>
+        </div>
+        <div class="lp-actions">
+          <button class="lp-btn-primary" style="background:#0d9488" onclick="switchSignal('rtdx')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Ver Dashboard
+          </button>
+          <button class="lp-btn-ghost" onclick="openIncident('RTDX')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Reportar Incidente
+          </button>
+        </div>
+      </div>
+
+      <!-- MEDIA -->
+      <div class="lp-pipeline-card" style="--accent:#9333ea;--accent-light:#f3e8ff">
+        <div class="lp-card-header">
+          <div class="lp-card-icon" style="background:#f3e8ff">
+            <svg width="20" height="20" fill="none" stroke="#9333ea" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <div class="lp-card-label">Media</div>
+            <div class="lp-card-sublabel">LTVO Data Quality</div>
+          </div>
+          <div class="lp-status-dot" style="background:#10b981" title="On track"></div>
+        </div>
+        <div class="lp-dq-score" style="color:#9333ea">99.40%</div>
+        <div class="lp-dq-label">Overall Data Quality</div>
+        <div class="lp-dims">
+          <div class="lp-dim"><span class="lp-dim-name">Timeliness</span><span class="lp-dim-val lp-ok">99.3%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Completeness</span><span class="lp-dim-val lp-ok">99.5%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Accuracy</span><span class="lp-dim-val lp-ok">99.4%</span></div>
+        </div>
+        <div class="lp-actions">
+          <button class="lp-btn-primary" style="background:#9333ea" onclick="switchSignal('media')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Ver Dashboard
+          </button>
+          <button class="lp-btn-ghost" onclick="openIncident('Media')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Reportar Incidente
+          </button>
+        </div>
+      </div>
+
+      <!-- T&CP -->
+      <div class="lp-pipeline-card" style="--accent:#7c3aed;--accent-light:#ede9fe">
+        <div class="lp-card-header">
+          <div class="lp-card-icon" style="background:#ede9fe">
+            <svg width="20" height="20" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div>
+            <div class="lp-card-label">T&amp;CP</div>
+            <div class="lp-card-sublabel">Trade &amp; Channel Perf.</div>
+          </div>
+          <div class="lp-status-dot" style="background:#f59e0b" title="Needs attention"></div>
+        </div>
+        <div class="lp-dq-score" style="color:#7c3aed">87.50%</div>
+        <div class="lp-dq-label">Overall Data Quality</div>
+        <div class="lp-dims">
+          <div class="lp-dim"><span class="lp-dim-name">Timeliness</span><span class="lp-dim-val lp-ok">90.2%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Accuracy</span><span class="lp-dim-val lp-warn">86.1%</span></div>
+          <div class="lp-dim"><span class="lp-dim-name">Right First Time</span><span class="lp-dim-val lp-warn">86.2%</span></div>
+        </div>
+        <div class="lp-actions">
+          <button class="lp-btn-primary" style="background:#7c3aed" onclick="alert('T&CP dashboard coming soon')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Ver Dashboard
+          </button>
+          <button class="lp-btn-ghost" onclick="openIncident('T&CP')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Reportar Incidente
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+
+
+  </div><!-- /page-overview -->
+
+
+  <!-- PAGE: KPIs -->
+  <div id="page-kpis" class="page">
+    <div class="filter-bar">
+      <div class="fg"><div class="flabel">Market</div><select class="fsel"><option>All</option><option>United States</option><option>Europe</option><option>Asia</option></select></div>
+      <div class="fg"><div class="flabel">Date</div><select class="fsel"><option>All</option><option>Today</option><option>This Week</option><option>This Month</option></select></div>
+    </div>
+    <div class="kpi-grid g5">
+      <div class="kpi-card" style="animation-delay:0s"><div class="kv d">1087</div><div class="klabel">Closed incident count</div></div>
+      <div class="kpi-card" style="animation-delay:.05s"><div class="kv s">0</div><div class="klabel">Out of SLA</div></div>
+      <div class="kpi-card" style="animation-delay:.1s"><div class="kv w">92.42%</div><div class="klabel">EDP Data Quality value</div></div>
+      <!-- DIMENSION BREAKDOWN CARD -->
+      <div class="kpi-card" id="dim-card" style="animation-delay:.15s;padding:10px 12px;display:flex;flex-direction:column;gap:0">
+        <div style="font-size:10px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Dimension Values</div>
+        <div id="dim-rows" style="display:flex;flex-direction:column;gap:5px;flex:1"></div>
+      </div>
+      <div class="kpi-card" style="animation-delay:.2s">
+        <div class="circ-title">E2E IRWTT</div>
+        <div class="circ-wrap"><svg width="110" height="110" style="transform:rotate(-90deg);overflow:visible"><circle cx="55" cy="55" r="45" fill="none" stroke="#e5e7eb" stroke-width="8"/><circle cx="55" cy="55" r="45" fill="none" stroke="#10b981" stroke-width="8" stroke-dasharray="282.7" stroke-dashoffset="0" stroke-linecap="round"/></svg><div class="circ-inner"><span class="circ-pct">100%</span></div></div>
+        <div class="circ-ticks"><span>0%</span><span>95%</span><span>100%</span></div>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="card ch260"><div class="card-title">Root Cause</div><div class="donut-row"><svg width="130" height="130" viewBox="0 0 130 130" style="flex-shrink:0;transform:rotate(-90deg)"><circle cx="65" cy="65" r="50" fill="none" stroke="#2563EB" stroke-width="20" stroke-dasharray="259.8 54.2"/><circle cx="65" cy="65" r="50" fill="none" stroke="#60A5FA" stroke-width="20" stroke-dasharray="29 285" stroke-dashoffset="-259.8"/><circle cx="65" cy="65" r="50" fill="none" stroke="#93C5FD" stroke-width="20" stroke-dasharray="11.2 302.8" stroke-dashoffset="-288.8"/><circle cx="65" cy="65" r="50" fill="none" stroke="#BFDBFE" stroke-width="20" stroke-dasharray="7.3 306.7" stroke-dashoffset="-300"/><circle cx="65" cy="65" r="50" fill="none" stroke="#DBEAFE" stroke-width="20" stroke-dasharray="6.2 307.8" stroke-dashoffset="-307.3"/><circle cx="65" cy="65" r="40" fill="white"/></svg><div class="legend"><div class="li"><div class="ldot" style="background:#2563EB"></div><span class="lname">System</span><span class="lval">82.87%</span></div><div class="li"><div class="ldot" style="background:#60A5FA"></div><span class="lname">Pending Root Cause</span><span class="lval">9.26%</span></div><div class="li"><div class="ldot" style="background:#93C5FD"></div><span class="lname">Retailer/Distributor</span><span class="lval">3.55%</span></div><div class="li"><div class="ldot" style="background:#BFDBFE"></div><span class="lname">Other</span><span class="lval">2.32%</span></div><div class="li"><div class="ldot" style="background:#DBEAFE"></div><span class="lname">User Mismanagement</span><span class="lval">1.00%</span></div><div class="li"><div class="ldot" style="background:#EFF6FF;border:1px solid #ddd"></div><span class="lname">Cause Unknown</span><span class="lval">0.50%</span></div><div class="li"><div class="ldot" style="background:#E0F2FE;border:1px solid #ddd"></div><span class="lname">Master Data Error</span><span class="lval">0.30%</span></div><div class="li"><div class="ldot" style="background:#F5F5F5;border:1px solid #ddd"></div><span class="lname">Out of Scope</span><span class="lval">0.20%</span></div></div></div></div>
+      <div class="card ch260"><div class="center-metric"><svg width="32" height="32" fill="none" stroke="var(--blue-400)" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="center-val">109.32MM</div><div class="center-lbl">USD Data Completeness<br>Improvement</div></div></div>
+      <div class="card ch260"><div class="card-title">Data Completeness Improvement %</div><div class="bar-area"><div class="bar-col"><div class="bar-outer"><div class="bar-inner" style="height:78.84%;background:#93C5FD"><span class="bar-lbl">78.84%</span></div></div><div class="bar-xlabel">Before MEC</div></div><div class="bar-col"><div class="bar-outer"><div class="bar-inner" style="height:85.48%;background:#60A5FA"><span class="bar-lbl">85.48%</span></div></div><div class="bar-xlabel">After MEC</div></div></div><div class="bar-legend"><div class="bli"><div class="bdot" style="background:#93C5FD"></div>Before MEC (78.84%)</div><div class="bli"><div class="bdot" style="background:#60A5FA"></div>After MEC (85.48%)</div></div></div>
+    </div>
+  </div>
+
+  <!-- PAGE: STATUS RADAR -->
+  <div id="page-radar" class="page">
+    <div class="filter-bar">
+      <div class="fg"><div class="flabel">Data Type</div><select class="fsel"><option>All</option><option>Sales</option><option>Inventory</option></select></div>
+      <div class="fg"><div class="flabel">Market</div><select class="fsel"><option>All</option><option>United States</option><option>Europe</option></select></div>
+      <div class="fg"><div class="flabel">Frequency</div><select class="fsel"><option>Daily</option><option>Weekly</option><option>Monthly</option></select></div>
+      <div class="fg"><div class="flabel">Name</div><div class="fiw"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="finput" placeholder="Enter Name"/></div></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn-pri">POS Granularity</button></div>
+    </div>
+    <div class="badge-row"><div class="badge">Data Completeness<div class="dot-ind" style="background:#ef4444"></div><div class="dot-ind" style="background:#facc15"></div><div class="dot-ind" style="background:#22c55e"></div></div></div>
+    <div class="card" style="overflow-x:auto;margin-bottom:14px"><table class="tbl" id="hm-tbl"></table></div>
+    <div class="bgrid">
+      <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="card-title" style="margin:0">Current Open Incident Tracker</div><button class="btn-out">Closed Incidents</button></div><div style="overflow-y:auto;max-height:200px"><table class="tbl" id="inc-tbl"></table></div></div>
+      <div class="card"><div class="card-title">Reason for Issue Opening</div><div class="donut-row"><svg width="130" height="130" viewBox="0 0 130 130" style="flex-shrink:0;transform:rotate(-90deg)"><circle cx="65" cy="65" r="50" fill="none" stroke="#2563EB" stroke-width="20" stroke-dasharray="176.9 137"/><circle cx="65" cy="65" r="50" fill="none" stroke="#60A5FA" stroke-width="20" stroke-dasharray="82.6 231.4" stroke-dashoffset="-176.9"/><circle cx="65" cy="65" r="50" fill="none" stroke="#93C5FD" stroke-width="20" stroke-dasharray="18.2 295.8" stroke-dashoffset="-259.5"/><circle cx="65" cy="65" r="50" fill="none" stroke="#BFDBFE" stroke-width="20" stroke-dasharray="15.7 298.3" stroke-dashoffset="-277.7"/><circle cx="65" cy="65" r="50" fill="none" stroke="#DBEAFE" stroke-width="20" stroke-dasharray="15.7 298.3" stroke-dashoffset="-293.4"/><circle cx="65" cy="65" r="40" fill="white"/></svg><div class="legend"><div class="li"><div class="ldot" style="background:#2563EB"></div><span class="lname">Quality</span><span class="lval">563</span></div><div class="li"><div class="ldot" style="background:#60A5FA"></div><span class="lname">Timeliness</span><span class="lval">263</span></div><div class="li"><div class="ldot" style="background:#93C5FD"></div><span class="lname">Validity</span><span class="lval">58</span></div><div class="li"><div class="ldot" style="background:#BFDBFE"></div><span class="lname">Availability</span><span class="lval">50</span></div><div class="li"><div class="ldot" style="background:#DBEAFE"></div><span class="lname">Functionality</span><span class="lval">50</span></div></div></div></div>
+    </div>
+  </div>
+
+  <!-- PAGE: INSIGHT CENTER -->
+  <div id="page-insight" class="page">
+    <div class="filter-bar">
+      <div class="fg"><div class="flabel">Market</div><select class="fsel"><option>All</option><option>United States</option><option>LATAM</option></select></div>
+      <div class="fg"><div class="flabel">Date</div><select class="fsel"><option>All</option><option>Today</option><option>This Week</option></select></div>
+      <div class="fg"><div class="flabel">Status</div><select class="fsel"><option>All</option><option>Active</option><option>Inactive</option></select></div>
+      <div class="fg"><div class="flabel">Delivery Method</div><select class="fsel"><option>All</option><option>API</option><option>SFTP</option></select></div>
+      <div class="fg"><div class="flabel">Name</div><div class="fiw"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="finput" placeholder="Enter Name"/></div></div>
+    </div>
+    <div class="igrid">
+      <div class="card"><div class="card-title">Highest Incident Count</div><div class="rank-list" id="rank-list"></div></div>
+      <div class="card" style="overflow-x:auto"><div class="card-title">Configuration Overview</div><table class="tbl" id="cfg-tbl"></table></div>
+    </div>
+  </div>
+
+  <!-- PAGE: VENDOR SCORECARD -->
+  <div id="page-vendor" class="page">
+    <div class="filter-bar">
+      <div class="fg"><div class="flabel">Status</div><select class="fsel"><option>All</option><option>Active</option><option>Warning</option></select></div>
+      <div class="fg"><div class="flabel">Vendor</div><select class="fsel"><option>All Vendors</option><option>DataVendor A</option><option>DataVendor B</option></select></div>
+      <div class="fg"><div class="flabel">Date Range</div><select class="fsel"><option>Last 7 days</option><option>Last 30 days</option><option>Last 90 days</option></select></div>
+    </div>
+    <div class="kpi-grid g4" style="margin-bottom:14px">
+      <div class="kpi-card" style="animation-delay:0s"><div class="kv pp">99.40%</div><div class="klabel">Data Quality</div><div class="goal-row"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Goal: 95.00%</div></div>
+      <div class="kpi-card" style="animation-delay:.05s"><div class="kv pp">2.8h</div><div class="klabel">Mean Time to Acknowledge</div><div class="goal-row"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Goal: 4.0h</div></div>
+      <div class="kpi-card" style="animation-delay:.1s"><div class="kv pp">6.5h</div><div class="klabel">Mean Time to Restore</div><div class="goal-row"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Goal: 8.0h</div></div>
+      <div class="kpi-card" style="animation-delay:.15s"><div class="kv pp">12</div><div class="klabel">Active Vendors</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px">
+      <div class="card ch240"><div class="card-title p">Data Quality Over Time</div><div style="flex:1;position:relative"><svg id="lc-quality" width="100%" height="100%" viewBox="0 0 400 150" style="position:absolute;top:0;left:0"></svg></div></div>
+      <div class="card ch240"><div class="card-title p">Incident Trends</div><div style="flex:1;position:relative"><svg id="lc-incidents" width="100%" height="100%" viewBox="0 0 400 150" style="position:absolute;top:0;left:0"></svg></div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title p">Data Quality Dimensions by Country</div>
+      <table class="tbl pthead">
+        <thead><tr><th>Country</th><th class="c">Completeness</th><th class="c">Accuracy</th><th class="c">Timeliness</th><th class="c">Overall</th></tr></thead>
+        <tbody>
+          <tr><td>United States</td><td class="c" style="color:var(--green);font-weight:600">99.8%</td><td class="c" style="color:var(--green);font-weight:600">99.5%</td><td class="c" style="color:var(--green);font-weight:600">99.2%</td><td class="c" style="color:var(--green);font-weight:700">99.5%</td></tr>
+          <tr><td>Canada</td><td class="c" style="color:var(--green);font-weight:600">99.2%</td><td class="c" style="color:var(--green);font-weight:600">98.9%</td><td class="c" style="color:var(--green);font-weight:600">99.0%</td><td class="c" style="color:var(--green);font-weight:700">99.0%</td></tr>
+          <tr><td>Mexico</td><td class="c" style="color:var(--yellow);font-weight:600">98.5%</td><td class="c" style="color:var(--yellow);font-weight:600">98.2%</td><td class="c" style="color:var(--yellow);font-weight:600">98.8%</td><td class="c" style="color:var(--yellow);font-weight:700">98.5%</td></tr>
+          <tr><td>Brazil</td><td class="c" style="color:var(--green);font-weight:600">99.0%</td><td class="c" style="color:var(--green);font-weight:600">99.3%</td><td class="c" style="color:var(--yellow);font-weight:600">98.7%</td><td class="c" style="color:var(--green);font-weight:700">99.0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title p">Recent Incidents</div>
+      <table class="tbl pthead">
+        <thead><tr><th>Incident ID</th><th>Vendor</th><th>Severity</th><th>Issue</th><th>Status</th><th class="c">MTTR</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC23451</td><td>DataVendor A</td><td><span class="tag tb">Low</span></td><td>Minor data delay</td><td><span class="tag tg">Resolved</span></td><td class="c" style="font-weight:700">2.3h</td></tr>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC23452</td><td>DataVendor B</td><td><span class="tag ty">Medium</span></td><td>Quality issue detected</td><td><span class="tag tb">In Progress</span></td><td class="c" style="font-weight:700">5.1h</td></tr>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC23453</td><td>DataVendor C</td><td><span class="tag tb">Low</span></td><td>Schema mismatch</td><td><span class="tag tg">Resolved</span></td><td class="c" style="font-weight:700">1.8h</td></tr>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC23454</td><td>DataVendor A</td><td><span class="tag tr2">High</span></td><td>Data pipeline failure</td><td><span class="tag tg">Resolved</span></td><td class="c" style="font-weight:700">8.2h</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAGE: E2E OBSERVABILITY -->
+  <div id="page-e2e" class="page">
+    <div class="filter-bar">
+      <div class="fg"><div class="flabel">Organization</div><select class="fsel"><option>All</option><option>North America</option><option>Europe</option></select></div>
+      <div class="fg"><div class="flabel">Capabilities</div><select class="fsel"><option>All Capabilities</option><option>Analytics</option><option>Campaigns</option></select></div>
+      <div class="fg"><div class="flabel">Date Range</div><select class="fsel"><option>Last Month</option><option>Last 3 Months</option><option>Last 6 Months</option></select></div>
+      <div class="fg"><div class="flabel">Sprint</div><select class="fsel"><option>Current Sprint</option><option>Previous Sprint</option><option>All Sprints</option></select></div>
+    </div>
+    <div class="kpi-grid g5" style="margin-bottom:14px">
+      <div class="kpi-card" style="animation-delay:0s"><div class="kv pp">156</div><div class="klabel">Total Incidents</div><div class="trend-row tdn"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>-15%</div></div>
+      <div class="kpi-card" style="animation-delay:.05s"><div class="kv pp">24</div><div class="klabel">This Month</div><div class="trend-row tdn"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>-14%</div></div>
+      <div class="kpi-card" style="animation-delay:.1s"><div class="kv pp">8</div><div class="klabel">High Severity</div><div class="trend-row tup"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>+2</div></div>
+      <div class="kpi-card" style="animation-delay:.15s"><div class="kv pp">3.2h</div><div class="klabel">Avg Resolution Time</div><div class="trend-row tdn"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>-18%</div></div>
+      <div class="kpi-card" style="animation-delay:.2s"><div class="kv pp">98.5%</div><div class="klabel">SLA Compliance</div><div class="trend-row tup"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>+2.3%</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px">
+      <div class="card ch280"><div class="card-title p">Incident Trends by Month</div><div style="flex:1;position:relative"><svg id="lc-month" width="100%" height="100%" viewBox="0 0 400 160" style="position:absolute;top:0;left:0"></svg></div></div>
+      <div class="card ch280"><div class="card-title p">Incident Trends by Sprint</div><div style="flex:1;position:relative"><svg id="lc-sprint" width="100%" height="100%" viewBox="0 0 400 160" style="position:absolute;top:0;left:0"></svg></div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title p">Incident Breakdown per Product by Sprint</div>
+      <table class="tbl pthead">
+        <thead><tr><th>Product</th><th class="c">Sprint 1</th><th class="c">Sprint 2</th><th class="c">Sprint 3</th><th class="c">Sprint 4</th><th class="c">Sprint 5</th><th class="c">Sprint 6</th><th class="c">Total</th></tr></thead>
+        <tbody>
+          <tr><td>Media Analytics Platform</td><td class="c">3</td><td class="c">5</td><td class="c">2</td><td class="c">4</td><td class="c">1</td><td class="c">2</td><td class="c" style="font-weight:700;color:var(--purple-700)">17</td></tr>
+          <tr><td>Campaign Management</td><td class="c">2</td><td class="c">3</td><td class="c">4</td><td class="c">2</td><td class="c">3</td><td class="c">1</td><td class="c" style="font-weight:700;color:var(--purple-700)">15</td></tr>
+          <tr><td>Attribution Engine</td><td class="c">1</td><td class="c">2</td><td class="c">1</td><td class="c">3</td><td class="c">2</td><td class="c">2</td><td class="c" style="font-weight:700;color:var(--purple-700)">11</td></tr>
+          <tr><td>Data Ingestion Service</td><td class="c">2</td><td class="c">2</td><td class="c">2</td><td class="c">2</td><td class="c">1</td><td class="c">1</td><td class="c" style="font-weight:700;color:var(--purple-700)">10</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title p">High Severity Incident List</div>
+      <table class="tbl pthead">
+        <thead><tr><th>Incident ID</th><th>Product</th><th>Severity</th><th>Description</th><th>Opened</th><th>Status</th><th class="c">SLA</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC98234</td><td>Media Analytics Platform</td><td><span class="tag tr2">Critical</span></td><td>Dashboard data not loading</td><td style="color:var(--gray-500)">2026-03-15</td><td><span class="tag tg">Resolved</span></td><td class="c"><span class="tag tg">Met</span></td></tr>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC98456</td><td>Campaign Management</td><td><span class="tag to">High</span></td><td>Campaign creation failing</td><td style="color:var(--gray-500)">2026-03-18</td><td><span class="tag tb">In Progress</span></td><td class="c"><span class="tag ty">At Risk</span></td></tr>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC98567</td><td>Attribution Engine</td><td><span class="tag to">High</span></td><td>Attribution data mismatch</td><td style="color:var(--gray-500)">2026-03-20</td><td><span class="tag tg">Resolved</span></td><td class="c"><span class="tag tg">Met</span></td></tr>
+          <tr><td style="font-family:'DM Mono',monospace;color:var(--blue-600)">INC98789</td><td>Data Ingestion Service</td><td><span class="tag tr2">Critical</span></td><td>Data pipeline failure</td><td style="color:var(--gray-500)">2026-03-22</td><td><span class="tag tg">Resolved</span></td><td class="c"><span class="tag tg">Met</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div>
+</div>
+
+<script>
+// HEATMAP
+const hmD=[
+  {name:'AGA REPRESENTACIONES',d:['y','y','y','y','y','y','y','y','y','y','y','y']},
+  {name:'AI Super MX - P&G Only',d:['g','g','g','g','g','g','g','g','g','g','g','g']},
+  {name:'ALIAR',d:['r','g','r','g','g','r','g','r','g','g','r','g']},
+  {name:'Alkosto Bolivar',d:['g','g','g','g','g','g','g','g','g','g','g','g']},
+  {name:'Alkosto CO - P&G Only',d:['g','g','g','g','g','x','g','g','g','g','g','g']},
+  {name:'ALVAREZ BOHL',d:['g','g','g','g','g','x','g','g','g','g','g','g']},
+  {name:'ANB FARMA',d:['g','g','g','g','g','x','g','g','g','g','g','g']},
+];
+const dates=['3/16','3/17','3/18','3/19','3/20','3/21','3/22','3/23','3/24','3/25','3/26','3/27'];
+const cm={g:'hg',y:'hy',r:'hr',x:'hx'};
+const ht=document.getElementById('hm-tbl');
+ht.innerHTML=`<thead><tr><th>Name</th>${dates.map(d=>`<th style="text-align:center;min-width:52px;font-size:10px">${d}/2026</th>`).join('')}</tr></thead>`;
+const htb=document.createElement('tbody');
+hmD.forEach(row=>{const tr=document.createElement('tr');tr.innerHTML=`<td style="font-weight:500;white-space:nowrap;padding-right:12px">${row.name}</td>`+row.d.map(c=>`<td style="padding:4px 6px"><div class="heat-cell ${cm[c]}"></div></td>`).join('');htb.appendChild(tr);});
+ht.appendChild(htb);
+
+// INCIDENTS TABLE
+const incs=[
+  {n:'AGA REPRESENTACIONES',t:'INC15140452',d:'EN | FORMAT ERROR | AGA | PERU',p:'4 - Low',s:'Awaiting'},
+  {n:'AGA REPRESENTACIONES',t:'INC15146218',d:'EN | ERROR | AGA | PERU',p:'4 - Low',s:'New'},
+  {n:'AGA REPRESENTACIONES',t:'INC15149690',d:'EN | ERROR | AGA | PERU',p:'4 - Low',s:'New'},
+  {n:'AGA REPRESENTACIONES',t:'INC15152432',d:'EN | MISSING DATA | AGA | PERU',p:'4 - Low',s:'New'},
+  {n:'AI Super MX - P&G Only',t:'INC15148983',d:'AI super MX | Missing data since April 8th, 2026',p:'4 - Low',s:'Awaiting'},
+];
+document.getElementById('inc-tbl').innerHTML=`<thead><tr><th>Name</th><th>Ticket</th><th>Description</th><th>Priority</th><th>Status</th></tr></thead><tbody>`+incs.map(i=>`<tr><td>${i.n}</td><td style="color:var(--blue-600);font-weight:600">${i.t}</td><td>${i.d}</td><td>${i.p}</td><td><span class="tag ${i.s==='New'?'tb':'ty'}">${i.s}</span></td></tr>`).join('')+`</tbody>`;
+
+// RANK LIST
+const ranks=[{n:'ALL',c:51},{n:'La Integridad MX',c:33},{n:'Coordenadas',c:26},{n:'AGA REPRESENTACIONES',c:25},{n:'DROGUERIA MX',c:24},{n:'QUIMICA SUIZA',c:24},{n:'RACSER',c:24}];
+const rl=document.getElementById('rank-list');const mx=51;
+ranks.forEach(d=>{const p=Math.round(d.c/mx*100);const el=document.createElement('div');el.className='rank-row';el.innerHTML=`<div class="rank-outer"><div class="rank-inner" style="width:${p}%">${d.c}</div></div><div class="rank-lbl">${d.n}</div>`;rl.appendChild(el);});
+
+// CONFIG TABLE
+const cfg=[
+  {n:'Dimed BR',code:'3864',pipe:'POS',freq:'Daily',gran:['MONTHLY','WEEKLY','DAILY'],cmts:'Without 20th of the cli...'},
+  {n:'Paguemenos BR',code:'3633',pipe:'POS',freq:'Daily',gran:['MONTHLY','WEEKLY'],cmts:'Without 12th of the po...'},
+  {n:'PRICEMART LADMAR',code:'7221',pipe:'POS',freq:'Daily',gran:['MONTHLY','WEEKLY','DAILY'],cmts:'Under review for we...'},
+  {n:'Walmart Ecommerce MX',code:'4114',pipe:'POS',freq:'Monthly',gran:['MONTHLY','WEEKLY','DAILY'],cmts:'This retailer invent...'},
+  {n:'SAM5 Ecommerce MX',code:'4123',pipe:'POS',freq:'Daily',gran:['MONTHLY','WEEKLY','DAILY'],cmts:'This retailer invent...'},
+  {n:'JAD_ZOGHEIB_BR',code:'7182',pipe:'POS',freq:'Monthly',gran:['MONTHLY'],cmts:'This customer migrat...'},
+  {n:'DIJISA',code:'2002197416',pipe:'RTDX',freq:'Daily',gran:['Daily'],cmts:'They receive through...'},
+];
+document.getElementById('cfg-tbl').innerHTML=`<thead><tr><th>Name</th><th>Code</th><th>Pipeline</th><th>Status</th><th>Frequency</th><th>Granularity</th><th>Comments</th></tr></thead><tbody>`+cfg.map(r=>`<tr><td>${r.n}</td><td style="font-family:'DM Mono',monospace;font-size:10px">${r.code}</td><td><span class="${r.pipe==='POS'?'tag-pos':'tag-rtdx'}">${r.pipe}</span></td><td><span class="tag-active">Active</span></td><td>${r.freq}</td><td><div class="gran-tags">${r.gran.map(g=>`<span class="tag-pos">${g}</span>`).join('')}</div></td><td style="color:var(--gray-500);font-size:10px">${r.cmts}</td></tr>`).join('')+`</tbody>`;
+
+// LINE CHARTS
+function drawLine(id,data,key,color,yMin,yMax){
+  const svg=document.getElementById(id);if(!svg)return;
+  const W=400,H=150,pad={t:8,r:12,b:28,l:32};
+  const iW=W-pad.l-pad.r,iH=H-pad.t-pad.b;
+  const vals=data.map(d=>d[key]);
+  const lo=yMin!==undefined?yMin:Math.min(...vals)*0.9;
+  const hi=yMax!==undefined?yMax:Math.max(...vals)*1.1;
+  const px=(_,i)=>pad.l+i*(iW/(data.length-1));
+  const py=v=>pad.t+iH-(v-lo)/(hi-lo)*iH;
+  let g='';
+  [0,.5,1].forEach(f=>{const y=pad.t+iH*(1-f);const v=(lo+(hi-lo)*f).toFixed(1);g+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;g+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" font-size="9" fill="#9ca3af">${v}</text>`;});
+  data.forEach((d,i)=>{g+=`<text x="${px(0,i)}" y="${H-4}" text-anchor="middle" font-size="9" fill="#9ca3af">${d.label||d.month||d.sprint}</text>`;});
+  const pts=data.map((d,i)=>`${px(0,i)},${py(d[key])}`).join(' ');
+  g+=`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  data.forEach((d,i)=>{g+=`<circle cx="${px(0,i)}" cy="${py(d[key])}" r="4" fill="${color}" stroke="white" stroke-width="1.5"/>`;});
+  svg.innerHTML=g;
+}
+
+drawLine('lc-quality',[{month:'Oct',v:98.5},{month:'Nov',v:99.1},{month:'Dec',v:98.8},{month:'Jan',v:99.2},{month:'Feb',v:99.4},{month:'Mar',v:99.3}],'v','#9333ea',95,100);
+drawLine('lc-incidents',[{month:'Oct',v:12},{month:'Nov',v:8},{month:'Dec',v:10},{month:'Jan',v:6},{month:'Feb',v:5},{month:'Mar',v:4}],'v','#a855f7');
+drawLine('lc-month',[{month:'Oct',v:45},{month:'Nov',v:38},{month:'Dec',v:42},{month:'Jan',v:35},{month:'Feb',v:28},{month:'Mar',v:24}],'v','#9333ea');
+drawLine('lc-sprint',[{sprint:'S1',v:8},{sprint:'S2',v:12},{sprint:'S3',v:9},{sprint:'S4',v:11},{sprint:'S5',v:7},{sprint:'S6',v:6}],'v','#a855f7');
+
+// DIMENSION VALUES per signal
+const dimData={
+  pos:[
+    {label:'Completeness', value:'93.10%', variant:'w'},
+    {label:'Consistency',  value:'91.33%', variant:'w'},
+    {label:'Timeliness',   value:'88.75%', variant:'w'},
+  ],
+  rtdx:[
+    {label:'Distributor Performance', value:'95.20%', variant:'s'},
+    {label:'Validity',                value:'89.60%', variant:'w'},
+    {label:'Completeness',            value:'91.80%', variant:'w'},
+  ],
+};
+const varColor={d:'var(--gray-800)',s:'var(--green)',w:'var(--yellow)'};
+function renderDims(sig){
+  const rows=document.getElementById('dim-rows');
+  if(!rows) return;
+  const dims=dimData[sig]||dimData.pos;
+  rows.innerHTML=dims.map(d=>`
+    <div style="flex:1;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:4px 8px;display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:0">
+      <span style="font-size:10px;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${d.label}</span>
+      <span style="font-size:13px;font-weight:700;color:${varColor[d.variant]};white-space:nowrap;flex-shrink:0">${d.value}</span>
+    </div>
+  `).join('');
+}
+renderDims('pos');
+
+// INCIDENT MODAL
+function openIncident(pipeline){
+  const overlay=document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML=`
+    <div class="modal-box">
+      <div class="modal-title">Reportar Incidente</div>
+      <div class="modal-sub">Pipeline: <strong>${pipeline}</strong> · ServiceNow</div>
+      <div class="modal-field">
+        <div class="modal-label">Título del Incidente</div>
+        <input class="modal-input" placeholder="Ej. Missing data since April 15th…"/>
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Prioridad</div>
+        <select class="modal-select">
+          <option>1 – Critical</option>
+          <option>2 – High</option>
+          <option selected>3 – Medium</option>
+          <option>4 – Low</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Descripción</div>
+        <textarea class="modal-textarea" placeholder="Describe el problema, impacto y pasos para reproducirlo…"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+        <button class="modal-submit" onclick="submitIncident(this,'${pipeline}')">Crear Incidente</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+}
+function submitIncident(btn, pipeline){
+  btn.textContent='Enviando…';
+  btn.disabled=true;
+  setTimeout(()=>{
+    btn.closest('.modal-overlay').remove();
+    const toast=document.createElement('div');
+    toast.style.cssText='position:fixed;bottom:24px;right:24px;background:#1f2937;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:9999;display:flex;align-items:center;gap:10px;animation:slideUp .2s ease';
+    toast.innerHTML=`<svg width="16" height="16" fill="none" stroke="#4ade80" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Incidente creado en <strong>${pipeline}</strong>`;
+    document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(),3500);
+  },900);
+}
+
+// NAVIGATION
+function switchSignal(sig){
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('stab-'+sig).classList.add('active');
+  const isMedia=sig==='media';
+  const isOverview=sig==='overview';
+  document.getElementById('subnav-pos').style.display=(!isMedia&&!isOverview)?'flex':'none';
+  document.getElementById('subnav-media').style.display=isMedia?'flex':'none';
+  if(!isMedia&&!isOverview) {
+    renderDims(sig);
+    // update the report button label in the subnav
+    const btn = document.querySelector('#subnav-pos button');
+    if(btn) btn.onclick = () => openIncident(sig.toUpperCase());
+  }
+  hideAll();
+  if(isOverview){
+    document.getElementById('page-overview').classList.add('active');
+  } else if(isMedia){
+    document.getElementById('page-vendor').classList.add('active');
+    document.querySelectorAll('#subnav-media .snav').forEach((e,i)=>{e.className='snav'+(i===0?' activep':'');});
+  } else {
+    document.getElementById('page-kpis').classList.add('active');
+    document.querySelectorAll('#subnav-pos .snav').forEach((e,i)=>{e.className='snav'+(i===0?' active':'');});
+  }
+}
+// Start on Overview
+switchSignal('overview');
+function hideAll(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));}
+function switchPage(el,id,signal){
+  if(signal==='media'){document.querySelectorAll('#subnav-media .snav').forEach(e=>e.className='snav');el.className='snav activep';}
+  else{document.querySelectorAll('#subnav-pos .snav').forEach(e=>e.className='snav');el.className='snav active';}
+  hideAll();document.getElementById('page-'+id).classList.add('active');
+}
+</script>
+</body>
+</html>
